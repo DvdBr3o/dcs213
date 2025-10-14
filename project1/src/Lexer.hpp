@@ -81,6 +81,10 @@ namespace dcs213::p1::lex {
 
 	struct Variable {};
 
+	/**
+	 * @brief Token is an atomic element in parsing.
+	 *
+	 */
 	struct Token {
 		using Kind = std::variant<Number, Operator, Constant, Variable>;
 
@@ -312,6 +316,12 @@ namespace dcs213::p1::lex {
 		return cursor.rest();
 	}
 
+	/**
+	 * @brief Try lex the head of a script into an unsigned number.
+	 *
+	 * @param script
+	 * @return tl::expected<std::tuple<double, std::string_view>, LexError>
+	 */
 	inline static auto lex_unsigned_number(std::string_view script)
 		-> tl::expected<std::tuple<double, std::string_view>, LexError> {
 		Cursor cursor  = script;
@@ -339,6 +349,12 @@ namespace dcs213::p1::lex {
 		return std::tuple { val, cursor.rest(0) };
 	}
 
+	/**
+	 * @brief Try lex the head of a script into a number.
+	 *
+	 * @param script
+	 * @return LexResult
+	 */
 	inline static auto lex_number(std::string_view script) -> LexResult {
 		Cursor cursor = script;
 
@@ -354,12 +370,23 @@ namespace dcs213::p1::lex {
 					const auto [val, rst] = *res;
 					return LexSuccess::make(Number { -val }, rst);
 				}
+			} else if (c == '+') {
+				if (const auto res = lex_unsigned_number(script.substr(1))) {
+					const auto [val, rst] = *res;
+					return LexSuccess::make(Number { val }, rst);
+				}
 			}
 		}
 
 		return tl::make_unexpected(LexErrors::NotMatched {});
 	}
 
+	/**
+	 * @brief Try lex the head of a script into an operator.
+	 *
+	 * @param script
+	 * @return LexResult
+	 */
 	inline static auto lex_operator(std::string_view script) -> LexResult {
 		if (script.size() >= 2 && script.substr(0, 2) == "ln") {
 			return LexSuccess::make(Operator::Ln, script.substr(2));
@@ -386,6 +413,12 @@ namespace dcs213::p1::lex {
 		return tl::make_unexpected(LexErrors::NotMatched {});
 	}
 
+	/**
+	 * @brief Try lex the head of a script into a constant.
+	 *
+	 * @param script
+	 * @return LexResult
+	 */
 	inline static auto lex_constant(std::string_view script) -> LexResult {
 		Cursor cursor = script;
 
@@ -397,6 +430,12 @@ namespace dcs213::p1::lex {
 		return tl::make_unexpected(LexErrors::NotMatched {});
 	}
 
+	/**
+	 * @brief Try lex the head of a script into a varaible $x$.
+	 *
+	 * @param script
+	 * @return LexResult
+	 */
 	inline static auto lex_variable(std::string_view script) -> LexResult {
 		if (script.size() >= 1 && script.substr(0, 1) == "x") {
 			return LexSuccess {
@@ -412,6 +451,11 @@ namespace dcs213::p1::lex {
 		return tl::make_unexpected(LexErrors::NotMatched {});
 	}
 
+	/**
+	 * @brief combine multiple lex try into one.
+	 *
+	 * @tparam Ts
+	 */
 	template<std::invocable<std::string_view>... Ts>
 	struct handle_lex : std::tuple<Ts...> {
 		constexpr handle_lex(Ts&&... ts) : std::tuple<Ts...> { std::forward<Ts>(ts)... } {}
@@ -438,6 +482,12 @@ namespace dcs213::p1::lex {
 		}
 	};
 
+	/**
+	 * @brief Tokenize a given script string.
+	 *
+	 * @param script
+	 * @return tl::expected<TokenStream, LexError>
+	 */
 	inline static auto lex(std::string_view script) -> tl::expected<TokenStream, LexError> {
 		static constexpr auto lex_handler = handle_lex {
 			&lex_number,

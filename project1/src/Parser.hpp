@@ -10,9 +10,17 @@
 #include <exception>
 
 namespace dcs213::p1::parse {
-
 	struct Expr;
 
+	/**
+	 * @brief Represents a sub-expression of binary-operand operator.
+	 *
+	 * e.g.
+	 *      +
+	 *    /   \
+	 *  1      2
+	 *
+	 */
 	struct BinOpExpr {
 		lex::Operator		  op;
 		std::unique_ptr<Expr> lhs;
@@ -25,6 +33,15 @@ namespace dcs213::p1::parse {
 		[[nodiscard]] auto to_string() const -> std::string;
 	};
 
+	/**
+	 * @brief Represents a sub-expression of unary-operand operator.
+	 *
+	 * e.g.
+	 *    ln
+	 *    |
+	 *    42
+	 *
+	 */
 	struct UnaryOpExpr {
 		lex::Operator		  op;
 		std::unique_ptr<Expr> operand;
@@ -36,6 +53,10 @@ namespace dcs213::p1::parse {
 		}
 	};
 
+	/**
+	 * @brief Represents a known number literal atomic expression.
+	 *
+	 */
 	struct Number {
 		double			   val;
 
@@ -46,13 +67,10 @@ namespace dcs213::p1::parse {
 		[[nodiscard]] auto to_string() const -> std::string { return to_string(*this); }
 	};
 
-	struct Term {
-		double coef = 1.;
-		double exp	= 1.;
-	};
-
-	class TermList {};
-
+	/**
+	 * @brief Represents a variable atomic expression.
+	 *
+	 */
 	struct Variable {
 		inline static constexpr auto to_string(const Variable& expr) -> std::string {
 			// return std::format("{} {}", lex::to_string(expr.op),);
@@ -71,10 +89,19 @@ namespace dcs213::p1::parse {
 	};
 
 	namespace Errors {
+		/**
+		 * @brief Just a placeholder error. Ignore it.
+		 *
+		 */
 		struct NotMatched {
 			[[nodiscard]] inline static auto to_string() -> std::string { return "Not Matched!"; }
 		};
 
+		/**
+		 * @brief An error that right hand side of a binary-operand operator is missed.
+		 *
+		 * e.g. in `(1+) * 2` the rhs is missed in `1+`.
+		 */
 		struct RhsMiss {
 			lex::Operator		  op;
 			std::unique_ptr<Expr> lhs;
@@ -82,6 +109,10 @@ namespace dcs213::p1::parse {
 			[[nodiscard]] auto	  to_string() const -> std::string;
 		};
 
+		/**
+		 * @brief An error that the operand of a unary-operand operator is missed.
+		 *
+		 */
 		struct UnaryOperandMiss {
 			lex::Operator	   op;
 
@@ -90,6 +121,10 @@ namespace dcs213::p1::parse {
 			}
 		};
 
+		/**
+		 * @brief An error that the right parenthesis corresponding to its left one is missed.
+		 *
+		 */
 		struct RParenMiss {
 			[[nodiscard]] inline static auto to_string() -> std::string {
 				return "Right Parenthesis Missed!";
@@ -112,6 +147,11 @@ namespace dcs213::p1::parse {
 				return std::holds_alternative<ErrorT>(*this);
 			}
 
+			/**
+			 * @brief Forwarding `.to_string()`.
+			 *
+			 * @return std::string
+			 */
 			[[nodiscard]] auto to_string() const -> std::string {
 				return std::visit([](const auto& err) { return err.to_string(); }, *this);
 			}
@@ -128,14 +168,35 @@ namespace dcs213::p1::parse {
 
 	class Parser {};
 
+	/**
+	 * @brief Parse a token stream into an AST.
+	 *
+	 * @param ts token stream
+	 * @param min_bp minimum binding power
+	 * @return tl::expected<Expr, ParseError>
+	 */
 	inline static auto parse(lex::TokenStream::View& ts, std::size_t min_bp = 0)
 		-> tl::expected<Expr, ParseError>;
 
+	/**
+	 * @brief Parse a token stream into an AST.
+	 *
+	 * @param ts
+	 * @param min_bp
+	 * @return tl::expected<Expr, ParseError>
+	 */
 	inline static auto parse(lex::TokenStream::View&& ts, std::size_t min_bp = 0)
 		-> tl::expected<Expr, ParseError> {
 		return parse(static_cast<lex::TokenStream::View&>(ts));
 	}
 
+	/**
+	 * @brief Parse a token stream into an AST.
+	 *
+	 * @param ts
+	 * @param min_bp
+	 * @return tl::expected<Expr, ParseError>
+	 */
 	inline static auto parse(const lex::TokenStream& ts, std::size_t min_bp = 0)
 		-> tl::expected<Expr, ParseError> {
 		return parse(ts.view());
