@@ -10,18 +10,22 @@
 
 namespace dcs213::p1 {
 	struct BindPower {
-		inline static constexpr auto unavailable = 0;
+		inline static constexpr auto unavailable = -1;
 
 		struct Infix {
-			std::size_t lbp;
-			std::size_t rbp;
+			int						  lbp;
+			int						  rbp;
+
+			inline constexpr explicit operator bool() const { return lbp > 0 && rbp > 0; }
 		};
 
 		//
-		std::size_t pbp = unavailable;
-		std::size_t lbp = unavailable;
-		std::size_t rbp = unavailable;
-		std::size_t sbp = unavailable;
+		int	  pbp	= unavailable;
+		Infix infix = {
+			.lbp = unavailable,
+			.rbp = unavailable,
+		};
+		int sbp = unavailable;
 	};
 
 	template<typename EnumT, std::size_t N>
@@ -163,12 +167,12 @@ namespace dcs213::p1 {
 						counter_mem = counter;
 						switch (asso.asso.asso) {  // wtf asso.asso.asso?
 							case Associativity::Left:
-								kv[static_cast<std::size_t>(asso.asso.which)].lbp = ++counter;
-								kv[static_cast<std::size_t>(asso.asso.which)].rbp = ++counter;
+								kv[static_cast<std::size_t>(asso.asso.which)].infix.lbp = ++counter;
+								kv[static_cast<std::size_t>(asso.asso.which)].infix.rbp = ++counter;
 								break;
 							case Associativity::Right:
-								kv[static_cast<std::size_t>(asso.asso.which)].rbp = ++counter;
-								kv[static_cast<std::size_t>(asso.asso.which)].lbp = ++counter;
+								kv[static_cast<std::size_t>(asso.asso.which)].infix.rbp = ++counter;
+								kv[static_cast<std::size_t>(asso.asso.which)].infix.lbp = ++counter;
 								break;
 							case Associativity::PrefixUnary:
 								kv[static_cast<std::size_t>(asso.asso.which)].pbp = ++counter;
@@ -182,12 +186,16 @@ namespace dcs213::p1 {
 						const auto counter_mem_mem = counter_mem;
 						switch (asso.asso.asso) {  // wtf asso.asso.asso?
 							case Associativity::Left:
-								kv[static_cast<std::size_t>(asso.asso.which)].lbp = ++counter_mem;
-								kv[static_cast<std::size_t>(asso.asso.which)].rbp = ++counter_mem;
+								kv[static_cast<std::size_t>(asso.asso.which)].infix.lbp =
+									++counter_mem;
+								kv[static_cast<std::size_t>(asso.asso.which)].infix.rbp =
+									++counter_mem;
 								break;
 							case Associativity::Right:
-								kv[static_cast<std::size_t>(asso.asso.which)].rbp = ++counter_mem;
-								kv[static_cast<std::size_t>(asso.asso.which)].lbp = ++counter_mem;
+								kv[static_cast<std::size_t>(asso.asso.which)].infix.rbp =
+									++counter_mem;
+								kv[static_cast<std::size_t>(asso.asso.which)].infix.lbp =
+									++counter_mem;
 								break;
 							case Associativity::PrefixUnary:
 								kv[static_cast<std::size_t>(asso.asso.which)].pbp = ++counter_mem;
@@ -233,9 +241,10 @@ namespace dcs213::p1 {
 		using namespace asso;
 
 		return build(
-			pre(Operator::LParen)		 // (
-			>= suf(Operator::RParen)	 // )
-			> pre(Operator::Plus)		 // unary +
+			// pre(Operator::LParen)		 // (
+			// >= suf(Operator::RParen)	 // )
+			// >
+			pre(Operator::Plus)			 // unary +
 			>= pre(Operator::Minus)		 // unary -
 			> suf(Operator::Derivative)	 // '
 			> right(Operator::Exponent)	 // ^

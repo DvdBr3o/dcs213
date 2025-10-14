@@ -26,9 +26,22 @@ namespace dcs213::p1 {
 
 	using details::get_type_n;
 
+	/**
+	 * @brief Get the n-th type of a type parameter pack
+	 *
+	 * @tparam I index
+	 * @tparam Args the type parameter pack
+	 */
 	template<size_t I, typename... Args>
 	using get_type_n_t = details::get_type_n<I, Args...>::type;
 
+	/**
+	 * @brief boilertemplate for polymorphism pattern matching of `std::visit` & `std::variant`.
+	 *
+	 * If you know it, you know it.
+	 *
+	 * @tparam Ts
+	 */
 	template<typename... Ts>
 	struct overload : Ts... {
 		using Ts::operator()...;
@@ -52,6 +65,15 @@ namespace dcs213::p1 {
 		};
 	}
 
+	/**
+	 * @brief constexpr-ly append an element onto an array.
+	 *
+	 * @tparam T
+	 * @tparam N
+	 * @param arr
+	 * @param item
+	 * @return std::array<T, N + 1>
+	 */
 	template<typename T, std::size_t N>
 	inline static constexpr auto concat_array(std::array<T, N>&& arr, T&& item)
 		-> std::array<T, N + 1> {
@@ -62,6 +84,16 @@ namespace dcs213::p1 {
 		);
 	}
 
+	/**
+	 * @brief constexpr-ly concat an array with an array.
+	 *
+	 * @tparam T
+	 * @tparam N1
+	 * @tparam N2
+	 * @param arr1
+	 * @param arr2
+	 * @return std::array<T, N1 + N2>
+	 */
 	template<typename T, std::size_t N1, std::size_t N2>
 	inline static constexpr auto concat_array(std::array<T, N1>&& arr1, std::array<T, N2>&& arr2)
 		-> std::array<T, N1 + N2> {

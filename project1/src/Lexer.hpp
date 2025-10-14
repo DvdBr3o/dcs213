@@ -139,6 +139,16 @@ namespace dcs213::p1::lex {
 		constexpr auto&		  operator*() { return token; }
 
 		constexpr const auto& operator*() const { return token; }
+
+		template<typename T>
+		constexpr auto get_if() -> T* {
+			return std::get_if<T>(&*(*this));
+		}
+
+		template<typename T>
+		constexpr auto get_if() const -> const T* {
+			return std::get_if<T>(&*(*this));
+		}
 	};
 
 	class TokenStreamView;
@@ -148,7 +158,19 @@ namespace dcs213::p1::lex {
 		using vector::vector;
 		using View = TokenStreamView;
 
-		constexpr auto view() -> TokenStreamView;
+		[[nodiscard]] constexpr auto view() const -> TokenStreamView;
+
+		[[nodiscard]] auto			 to_string() const -> std::string {
+			  std::stringstream s;
+
+			  for (const auto& t : *this) s << t.to_string() << '\n';
+
+			  return s.str();
+		}
+
+		inline friend auto to_string(const TokenStream& ts) -> std::string {
+			return ts.to_string();
+		}
 	};
 
 	class TokenStreamView {
@@ -202,7 +224,12 @@ namespace dcs213::p1::lex {
 			return { _ts, _index + offset, _index + offset + len };
 		}
 
-		constexpr auto bump() -> std::optional<Token> { return peek(_index++); }
+		constexpr auto bump() -> std::optional<Token> {
+			if (_index < _end)
+				return _ts[_index++];
+			else
+				return std::nullopt;
+		}
 
 		constexpr auto peek(std::size_t n = 0) -> std::optional<Token> {
 			if (_index + n < _end)
@@ -439,7 +466,7 @@ namespace dcs213::p1::lex {
 }  // namespace dcs213::p1::lex
 
 namespace dcs213::p1::lex {
-	inline constexpr auto TokenStream::view() -> TokenStreamView {
+	inline constexpr auto TokenStream::view() const -> TokenStreamView {
 		return { *this };
 	}
 }  // namespace dcs213::p1::lex
