@@ -44,6 +44,7 @@ namespace dcs213::p1::lex {
 		LParen,		 // (
 		RParen,		 // )
 		Derivative,	 // '
+		When,		 // $
 	};
 
 	inline static constexpr auto to_string(Operator op) -> std::string {
@@ -57,6 +58,7 @@ namespace dcs213::p1::lex {
 			case Operator::LParen: return "(";
 			case Operator::RParen: return ")";
 			case Operator::Derivative: return "'";
+			case Operator::When: return "$";
 		}
 	}
 
@@ -108,6 +110,7 @@ namespace dcs213::p1::lex {
 								   case Operator::LParen: return std::format("OPERATOR(()");
 								   case Operator::RParen: return std::format("OPERATOR())");
 								   case Operator::Derivative: return std::format("OPERATOR(')");
+								   case Operator::When: return std::format("OPERATOR($)");
 							   }
 						   },
 						   [&](const Constant& tok) {
@@ -370,12 +373,13 @@ namespace dcs213::p1::lex {
 					const auto [val, rst] = *res;
 					return LexSuccess::make(Number { -val }, rst);
 				}
-			} else if (c == '+') {
-				if (const auto res = lex_unsigned_number(script.substr(1))) {
-					const auto [val, rst] = *res;
-					return LexSuccess::make(Number { val }, rst);
-				}
 			}
+			// else if (c == '+') {
+			// 	if (const auto res = lex_unsigned_number(script.substr(1))) {
+			// 		const auto [val, rst] = *res;
+			// 		return LexSuccess::make(Number { val }, rst);
+			// 	}
+			// }
 		}
 
 		return tl::make_unexpected(LexErrors::NotMatched {});
@@ -403,6 +407,7 @@ namespace dcs213::p1::lex {
 					case '(': oper = Operator::LParen; break;
 					case ')': oper = Operator::RParen; break;
 					case '\'': oper = Operator::Derivative; break;
+					case '$': oper = Operator::When; break;
 					default: return tl::make_unexpected(LexErrors::NotMatched {});
 				}
 
@@ -490,8 +495,8 @@ namespace dcs213::p1::lex {
 	 */
 	inline static auto lex(std::string_view script) -> tl::expected<TokenStream, LexError> {
 		static constexpr auto lex_handler = handle_lex {
-			&lex_number,
 			&lex_operator,
+			&lex_number,
 			&lex_constant,
 			&lex_variable,
 		};

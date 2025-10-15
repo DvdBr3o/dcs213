@@ -86,6 +86,21 @@ namespace dcs213::p1::parse {
 		[[nodiscard]] auto to_string() const -> std::string {
 			return std::visit([](const auto& expr) { return expr.to_string(); }, *this);
 		}
+
+		template<typename T>
+		auto get_if() -> T* {
+			return std::get_if<T>(this);
+		}
+
+		template<typename T>
+		auto get_if() const -> const T* {
+			return std::get_if<T>(this);
+		}
+
+		template<typename T>
+		auto is() const -> bool {
+			return std::holds_alternative<T>(*this);
+		}
 	};
 
 	namespace Errors {

@@ -253,9 +253,23 @@ namespace dcs213::p1 {
 			>= left(Operator::Devide)	 // /
 			> left(Operator::Plus)		 // +
 			>= left(Operator::Minus)	 // -
+			> left(Operator::When)		 // $
 		);
 	}
 
 	inline static constexpr auto bindpower = operator_bindpower_factory();
+
+	inline static auto			 show_bindpower_table() -> void {
+		  std::cout << std::format("op: pbp lbp rbp sbp\n");
+		  for (const auto& [k, v] : bindpower)
+			  std::cout << std::format(
+				  "{:2}: {:3} {:3} {:3} {:3}\n",  //
+				  to_string(k),
+				  v.pbp,
+				  v.infix.lbp,
+				  v.infix.rbp,
+				  v.sbp
+			  );
+	}
 
 }  // namespace dcs213::p1
