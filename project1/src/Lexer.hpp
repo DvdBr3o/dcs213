@@ -280,7 +280,9 @@ namespace dcs213::p1::lex {
 	};
 
 	namespace LexErrors {
-		struct NotMatched {};
+		struct NotMatched {
+			[[nodiscard]] inline static auto to_string() -> std::string { return "Not Matched!"; }
+		};
 
 		struct UndefinedIdentifier {
 			std::string_view   id;
@@ -290,10 +292,19 @@ namespace dcs213::p1::lex {
 			}
 		};
 
-		using LexError = std::variant<NotMatched, UndefinedIdentifier>;
+		struct LexError : public std::variant<NotMatched, UndefinedIdentifier> {
+			[[nodiscard]] auto to_string() const -> std::string {
+				return std::visit([](const auto& err) { return err.to_string(); }, *this);
+			}
+		};
+
+		auto make_error(auto&& err) {
+			return tl::make_unexpected(LexError { std::forward<decltype(err)>(err) });
+		}
 	}  // namespace LexErrors
 
 	using LexErrors::LexError;
+	using LexErrors::make_error;
 
 	using LexResult = tl::expected<LexSuccess, LexError>;
 
@@ -334,7 +345,7 @@ namespace dcs213::p1::lex {
 
 		if (const auto fst = cursor.first())
 			if (!is_number(fst))
-				return tl::make_unexpected(LexErrors::NotMatched {});
+				return make_error(LexErrors::NotMatched {});
 
 		while (const auto c = cursor.first()) {
 			if (is_number(c))
@@ -382,7 +393,7 @@ namespace dcs213::p1::lex {
 			// }
 		}
 
-		return tl::make_unexpected(LexErrors::NotMatched {});
+		return make_error(LexErrors::NotMatched {});
 	}
 
 	/**
@@ -408,14 +419,14 @@ namespace dcs213::p1::lex {
 					case ')': oper = Operator::RParen; break;
 					case '\'': oper = Operator::Derivative; break;
 					case '$': oper = Operator::When; break;
-					default: return tl::make_unexpected(LexErrors::NotMatched {});
+					default: return make_error(LexErrors::NotMatched {});
 				}
 
 				return LexSuccess::make(oper, script.substr(1));
 			}
 		}
 
-		return tl::make_unexpected(LexErrors::NotMatched {});
+		return make_error(LexErrors::NotMatched {});
 	}
 
 	/**
@@ -432,7 +443,7 @@ namespace dcs213::p1::lex {
 		else if (script.size() >= 1 && script.substr(0, 1) == "e")
 			return LexSuccess::make(Constant::E, script.substr(1));
 
-		return tl::make_unexpected(LexErrors::NotMatched {});
+		return make_error(LexErrors::NotMatched {});
 	}
 
 	/**
@@ -453,7 +464,7 @@ namespace dcs213::p1::lex {
 			};
 			return LexSuccess::make(Variable {}, script.substr(1));
 		}
-		return tl::make_unexpected(LexErrors::NotMatched {});
+		return make_error(LexErrors::NotMatched {});
 	}
 
 	/**
@@ -483,7 +494,7 @@ namespace dcs213::p1::lex {
 
 		[[nodiscard]] auto apply(std::string_view script, std::index_sequence<>) const
 			-> LexResult {
-			return tl::make_unexpected(LexErrors::NotMatched {});
+			return make_error(LexErrors::NotMatched {});
 		}
 	};
 

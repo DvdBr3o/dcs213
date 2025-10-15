@@ -33,7 +33,7 @@ namespace dcs213::p1 {
 	 * @tparam Args the type parameter pack
 	 */
 	template<size_t I, typename... Args>
-	using get_type_n_t = details::get_type_n<I, Args...>::type;
+	using get_type_n_t = get_type_n<I, Args...>::type;
 
 	/**
 	 * @brief boilertemplate for polymorphism pattern matching of `std::visit` & `std::variant`.
@@ -111,17 +111,17 @@ namespace dcs213::p1::json {
 
 	namespace details {
 		template<size_t I, typename... Args>
-		auto init_args(std::tuple<Args...>& args, simdjson::padded_string json) -> void {
-			if constexpr (I >= sizeof...(Args))
-				return;
-			auto doc		  = parser.iterate(json);
-			std::get<I>(args) = doc.at(I).get<get_type_n_t<I, Args...>>().take_value();
-			init_args<I + 1>(args, doc);
+		auto init_args(std::tuple<Args...>& args, simdjson::padded_string&& json) -> void {
+			if constexpr (I < sizeof...(Args)) {
+				auto doc		  = parser.iterate(json);
+				std::get<I>(args) = doc.at(I).get<get_type_n_t<I, Args...>>().take_value();
+				init_args<I + 1>(args, std::move(json));
+			}
 		}
 
 		template<typename... Args>
-		auto init_args(std::tuple<Args...>& args, simdjson::padded_string json) -> void {
-			init_args<0>(args, json);
+		auto init_args(std::tuple<Args...>& args, simdjson::padded_string&& json) -> void {
+			init_args<0>(args, std::move(json));
 		}
 
 		template<typename... Args>

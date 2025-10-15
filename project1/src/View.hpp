@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Lexer.hpp"
+#include "Parser.hpp"
+#include "Evaluator.hpp"
 #include "Utils.hpp"
 
 #if defined DCS213_P1_PLAT_WINDOWS
@@ -92,7 +95,7 @@ namespace dcs213::p1 {
 						// TODO: Fix string -> json string conversion, e.g. `\` -> `\\` in strings.
 						// resolve(id, 0, std::to_string(result));
 						// resolve(id, 0, std::format("\"{}\"", result));
-						std::cerr << result;
+						// std::cerr << result;
 						// resolve(id, 0, result);
 						resolve(id, 0, result);
 					}
@@ -548,8 +551,9 @@ namespace dcs213::p1 {
       ui.displayInput.addEventListener("keyup", async (event) => {
         if (event.key === "Enter") {
           event.preventDefault();
-          const inputValue = event.target.value;
-          console.log(inputValue);
+          const res = await window.evalExpr(event.target.value);
+          if (res.success) ui.displayInput.value = res.result;
+          else ui.displayInput.value = res.error;
         }
       });
 
@@ -558,6 +562,12 @@ namespace dcs213::p1 {
         displayInput.selectionStart = 0;
         displayInput.selectionEnd = 0;
         displayInput.focus();
+      });
+
+      ui.opEqual.addEventListener("click", async () => {
+        const res = await window.evalExpr(ui.displayInput.value);
+        if (res.success) ui.displayInput.value = res.result;
+        else ui.displayInput.value = res.error;
       });
     </script>
   </body>
@@ -601,6 +611,30 @@ namespace dcs213::p1 {
 		set_title(spec.title);
 		set_size(spec.width, spec.height, WEBVIEW_HINT_NONE);
 		set_html(spec.ui);
+		bind_fn<std::string_view>("evalExpr", [](std::string_view s) -> std::string {
+			const auto ts = lex::lex(s);
+
+			if (!ts)
+				return std::format(
+					R"({{ "success": false, "error": "{}" }})",
+					ts.error().to_string()
+				);
+
+			const auto ast = parse::parse(*ts);
+
+			if (!ast)
+				return std::format(
+					R"({{ "success": false, "error": "{}" }})",
+					ast.error().to_string()
+				);
+
+			const auto res = evaluate::eval(*ast);
+
+			if (!res)
+				return R"({{ "success": false, "error": "Failed to eval!" }})";
+
+			return std::format(R"({{ "success": true, "result": "{}" }})", *res);
+		});
 	}
 
 	inline auto MainView::launch() -> void {

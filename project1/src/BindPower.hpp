@@ -157,12 +157,13 @@ namespace dcs213::p1 {
 			using std::pair;
 			using std::size_t;
 
-			BindPower kv[EnumMap::count] = {};
-			size_t	  counter			 = 0;
-			size_t	  counter_mem		 = 0;
+			BindPower  kv[EnumMap::count] = {};
+			size_t	   counter			  = 0;
+			size_t	   counter_mem		  = 0;
+			Predecence curpred			  = Predecence::Prior;
 
 			for (const auto& asso : std::ranges::reverse_view(chain)) {
-				switch (asso.pred) {
+				switch (curpred) {
 					case Predecence::Prior:
 						counter_mem = counter;
 						switch (asso.asso.asso) {  // wtf asso.asso.asso?
@@ -207,6 +208,7 @@ namespace dcs213::p1 {
 						counter_mem = counter_mem_mem;
 						break;
 				}
+				curpred = asso.pred;
 			}
 
 			return { std::move(kv) };
@@ -241,9 +243,6 @@ namespace dcs213::p1 {
 		using namespace asso;
 
 		return build(
-			// pre(Operator::LParen)		 // (
-			// >= suf(Operator::RParen)	 // )
-			// >
 			pre(Operator::Plus)			 // unary +
 			>= pre(Operator::Minus)		 // unary -
 			> suf(Operator::Derivative)	 // '

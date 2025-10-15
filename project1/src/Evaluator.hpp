@@ -4,7 +4,6 @@
 #include "Parser.hpp"
 
 #include <optional>
-#include <map>
 #include <utility>
 #include <vector>
 
@@ -375,12 +374,12 @@ namespace dcs213::p1::evaluate {
 		return std::nullopt;
 	}
 
-	inline static auto eval(const parse::Expr& expr) -> std::string {
+	inline static auto eval(const parse::Expr& expr) -> std::optional<std::string> {
 		if (const auto res = eval_con(expr))
 			return std::format("{}", *res);
 		else if (const auto terms = eval_termlist_calc(expr))
 			return std::format("{}", terms->to_string());
 
-		return "Failed to eval!";
+		return std::nullopt;
 	}
 }  // namespace dcs213::p1::evaluate
