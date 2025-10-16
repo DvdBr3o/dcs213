@@ -95,7 +95,7 @@ namespace dcs213::p1 {
 						// TODO: Fix string -> json string conversion, e.g. `\` -> `\\` in strings.
 						// resolve(id, 0, std::to_string(result));
 						// resolve(id, 0, std::format("\"{}\"", result));
-						// std::cerr << result;
+						std::cerr << result << '\n';
 						// resolve(id, 0, result);
 						resolve(id, 0, result);
 					}
@@ -612,7 +612,11 @@ namespace dcs213::p1 {
 		set_size(spec.width, spec.height, WEBVIEW_HINT_NONE);
 		set_html(spec.ui);
 		bind_fn<std::string_view>("evalExpr", [](std::string_view s) -> std::string {
+			std::cout << std::format("recv: ({})\n", s);
+
 			const auto ts = lex::lex(s);
+
+			std::cout << "before ts\n";
 
 			if (!ts)
 				return std::format(
@@ -622,6 +626,8 @@ namespace dcs213::p1 {
 
 			const auto ast = parse::parse(*ts);
 
+			std::cout << "before ast\n";
+
 			if (!ast)
 				return std::format(
 					R"({{ "success": false, "error": "{}" }})",
@@ -629,6 +635,8 @@ namespace dcs213::p1 {
 				);
 
 			const auto res = evaluate::eval(*ast);
+
+			std::cout << "before res\n";
 
 			if (!res)
 				return R"({{ "success": false, "error": "Failed to eval!" }})";

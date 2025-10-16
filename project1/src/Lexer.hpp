@@ -281,14 +281,17 @@ namespace dcs213::p1::lex {
 
 	namespace LexErrors {
 		struct NotMatched {
-			[[nodiscard]] inline static auto to_string() -> std::string { return "Not Matched!"; }
+			[[nodiscard]] inline static auto to_string() -> std::string {
+				return "有脏东西我不认得>_<!";
+			}
 		};
 
 		struct UndefinedIdentifier {
 			std::string_view   id;
 
 			[[nodiscard]] auto to_string() const -> std::string {
-				return std::format("我不认得 `{}` >_<", id);
+				// return std::format("我不认得 `{}` >_<", id);
+				return std::format("I don't know wtf is `{}` >_<", id);
 			}
 		};
 
@@ -518,7 +521,7 @@ namespace dcs213::p1::lex {
 			auto res = lex_handler(script);
 			if (res)
 				ts.emplace_back(std::move(res)->tok);
-			else if (!std::holds_alternative<LexErrors::NotMatched>(res.error()))
+			else
 				return tl::make_unexpected(std::move(res).error());
 
 			script = res->rest;
