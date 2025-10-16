@@ -14,6 +14,7 @@
 #include <type_traits>
 #include <utility>
 #include <variant>
+#include <cmath>
 
 namespace dcs213::p1::lex {
 	inline static constexpr auto is_number(char c) -> bool;
