@@ -8,7 +8,6 @@ using namespace dcs213::p1;
 
 //
 int main(int argc, char** argv) {
-	show_bindpower_table();
 	MainView view {
 		{
 			.debug	= true,
