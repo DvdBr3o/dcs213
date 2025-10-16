@@ -10,7 +10,7 @@ int main(int argc, char** argv) {
 #endif
 	MainView view {
 		{
-			.debug	= true,
+			.debug	= false,
 			.width	= 400,
 			.height = 560,
 			.title	= "DCS213 P1 YatCalculator",
@@ -18,4 +18,6 @@ int main(int argc, char** argv) {
 		 }
 	};
 	view.run();
+
+	return 0;
 }

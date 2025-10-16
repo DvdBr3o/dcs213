@@ -241,6 +241,8 @@ namespace dcs213::p1::parse {
 										 .operand = std::make_unique<Expr>(*std::move(rhs)),
 										 }
 						};
+					else
+						return make_error(Errors::UnaryOperandMiss { .op = *op });
 				}
 			} else if (const auto num = tok->get_if<lex::Number>()) {
 				lhs = { Number { num->value } };
