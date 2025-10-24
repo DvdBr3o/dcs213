@@ -38,9 +38,9 @@ namespace dcs213::p1::evaluate {
 			else if (coef == -1. && expo != 1.)
 				return std::format("-x^{}", expo);
 			else if (coef != 1. && expo == 1.)
-				return std::format("{}x", coef);
+				return std::format("{}*x", coef);
 			else
-				return std::format("{}x^{}", coef, expo);
+				return std::format("{}*x^{}", coef, expo);
 		}
 
 		[[nodiscard]] auto derivative() const -> std::optional<Term> {
