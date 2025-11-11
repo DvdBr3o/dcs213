@@ -118,8 +118,18 @@
     depth: 3,
     indent: auto,
     target: heading,
+  )  
+}
+
+#let rounded(
+  item,
+  radius: 10pt
+) = {
+  block(
+    clip: true,
+  	radius: radius,
+    item
   )
-  
 }
 
 #let dvdbr3otypst(
@@ -143,7 +153,7 @@
   show: codly-init.with()
 
   show raw: set text(
-    font: ("CaskaydiaCove NF"),
+    font: ("CaskaydiaCove NF", "HarmonyOS Sans SC"),
     size: 1.03em
   )
   
