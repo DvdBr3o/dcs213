@@ -44,8 +44,7 @@ namespace dcs213::project2 {
 
 		cv::Mat res = cv::Mat::zeros(size.height, size.width, CV_8UC3);
 
-		// TODO: interpolation
-		if (img.size[0] > size.height) {  // zoom in
+		if (img.size[0] > size.height) {  // zoom out
 			const auto scale = img.size[0] / size.height;
 			for (int i = 0; i < size.height; ++i)
 				for (int j = 0; j < size.width; ++j) {
@@ -59,15 +58,58 @@ namespace dcs213::project2 {
 					pixel *= (1. / (scale * scale));
 					res.at<cv::Vec3b>(i, j) = pixel;
 				}
-		} else {  // zoom out
+		} else {  // zoom in
 			const auto scale = size.height / img.size[0];
-			for (int i = 0; i < img.size[0]; ++i)
-				for (int j = 0; j < img.size[1]; ++j) {
+			const auto sep	 = 1. / static_cast<double>(scale);
+			for (int i = 0; i < img.size[0] - 1; ++i)
+				for (int j = 0; j < img.size[1] - 1; ++j) {
 					for (int x = 0; x < scale; ++x)
 						for (int y = 0; y < scale; ++y)
 							res.at<cv::Vec3b>(i * scale + x, j * scale + y) =
-								img.at<cv::Vec3b>(i, j);
+								img.at<cv::Vec3b>(i, j) * (1 - sep * x) * (1 - sep * y) +  //
+								img.at<cv::Vec3b>(i, j + 1) * (1 - sep * x) * (sep * y) +  //
+								img.at<cv::Vec3b>(i + 1, j) * (sep * x) * (1 - sep * y) +  //
+								img.at<cv::Vec3b>(i + 1, j + 1) * (sep * x) * (sep * y)	   //
+								;
 				}
+			{
+				const int i = img.size[0] - 1;
+				for (int j = 0; j < img.size[1] - 1; ++j) {
+					for (int x = 0; x < scale; ++x)
+						for (int y = 0; y < scale; ++y)
+							res.at<cv::Vec3b>(i * scale + x, j * scale + y) =
+								img.at<cv::Vec3b>(i - 1, j) * (1 - sep * x) * (1 - sep * y) +  //
+								img.at<cv::Vec3b>(i - 1, j + 1) * (1 - sep * x) * (sep * y) +  //
+								img.at<cv::Vec3b>(i, j) * (sep * x) * (1 - sep * y) +		   //
+								img.at<cv::Vec3b>(i, j + 1) * (sep * x) * (sep * y)			   //
+								;
+				}
+			}
+			{
+				const int j = img.size[1] - 1;
+				for (int i = 0; i < img.size[1] - 1; ++i) {
+					for (int x = 0; x < scale; ++x)
+						for (int y = 0; y < scale; ++y)
+							res.at<cv::Vec3b>(i * scale + x, j * scale + y) =
+								img.at<cv::Vec3b>(i, j - 1) * (1 - sep * x) * (1 - sep * y) +  //
+								img.at<cv::Vec3b>(i, j) * (1 - sep * x) * (sep * y) +		   //
+								img.at<cv::Vec3b>(i + 1, j - 1) * (sep * x) * (1 - sep * y) +  //
+								img.at<cv::Vec3b>(i + 1, j) * (sep * x) * (sep * y)			   //
+								;
+				}
+			}
+			{
+				const int i = img.size[0] - 1;
+				const int j = img.size[1] - 1;
+				for (int x = 0; x < scale; ++x)
+					for (int y = 0; y < scale; ++y)
+						res.at<cv::Vec3b>(i * scale + x, j * scale + y) =
+							img.at<cv::Vec3b>(i - 1, j - 1) * (1 - sep * x) * (1 - sep * y) +  //
+							img.at<cv::Vec3b>(i - 1, j) * (1 - sep * x) * (sep * y) +		   //
+							img.at<cv::Vec3b>(i, j - 1) * (sep * x) * (1 - sep * y) +		   //
+							img.at<cv::Vec3b>(i, j) * (sep * x) * (sep * y)					   //
+							;
+			}
 		}
 
 		cv::imwrite(output_path, res);
