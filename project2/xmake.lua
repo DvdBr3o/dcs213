@@ -1,5 +1,5 @@
-add_requires("opencv")
-add_requires("clipp")
+-- add_requires("opencv")
+add_requires("vcpkg::clipp", {public = true})
 
 target("dcs213.project2")
     set_kind("binary")
